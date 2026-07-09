@@ -3,20 +3,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RuntimeBox } from '@/components/RuntimeBox';
 import { StepTimeline } from '@/components/StepTimeline';
-import { sampleCode, steps } from '@/lib/runtimeTrace';
+import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
 
 export default function Home() {
-  const [code, setCode] = useState(sampleCode);
+  const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const selectedSample =
+    runtimeSamples.find((sample) => sample.id === selectedSampleId) ??
+    defaultSample;
+
+  const steps = selectedSample.steps;
+  const code = selectedSample.code;
   const currentStep = steps[currentStepIndex];
 
   const codeLines = useMemo(() => code.split('\n'), [code]);
 
   const tracedLines = useMemo(
     () => new Set(steps.map((step) => step.line)),
-    [],
+    [steps],
   );
 
   useEffect(() => {
@@ -67,6 +73,12 @@ export default function Home() {
     setCurrentStepIndex(matchingStepIndex);
   }
 
+  function selectSample(sampleId: string) {
+    setSelectedSampleId(sampleId);
+    setCurrentStepIndex(0);
+    setIsPlaying(false);
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -84,20 +96,34 @@ export default function Home() {
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-200">Code</h2>
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-200">
+                  Code sample
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {selectedSample.description}
+                </p>
+              </div>
+
+              <span className="shrink-0 rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
                 Current line: {currentStep.line}
               </span>
             </div>
-
-            <textarea
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              className="min-h-64 w-full rounded-lg border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100 outline-none focus:border-cyan-500"
-              spellCheck={false}
-            />
-
+            <select
+              value={selectedSampleId}
+              onChange={(event) => selectSample(event.target.value)}
+              className="mb-4 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-500"
+            >
+              {runtimeSamples.map((sample) => (
+                <option key={sample.id} value={sample.id}>
+                  {sample.name}
+                </option>
+              ))}
+            </select>
+            <pre className="min-h-64 w-full overflow-auto rounded-lg border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100">
+              {code}
+            </pre>
             <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm">
               {codeLines.map((line, index) => {
                 const lineNumber = index + 1;
