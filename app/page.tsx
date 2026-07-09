@@ -107,9 +107,9 @@ export default function Home() {
             EventLoop Lab
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-400">
-            This first version uses a simulated trace. It does not execute
-            arbitrary code yet. The goal is to teach call stack, Web APIs,
-            microtasks, macrotasks, and event loop ordering.
+            Analyze small JavaScript snippets and step through how supported
+            patterns move through the call stack, Web APIs, microtask queue,
+            macrotask queue, and event loop.
           </p>
         </header>
 
@@ -141,8 +141,8 @@ export default function Home() {
               ))}
             </select>
             <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-              Parser v0 only supports simple console.log, setTimeout, and
-              Promise.resolve().then examples. Unsupported code will be ignored
+              Parser v1 supports simple console.log, function calls, setTimeout,
+              and Promise.resolve().then examples. Unsupported code is ignored
               for now.
             </p>
             <textarea

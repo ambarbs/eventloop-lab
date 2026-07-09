@@ -13,9 +13,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://eventloop-lab.vercel.app'),
   title: 'EventLoop Lab',
   description:
-    'Step through JavaScript code and visualize the call stack, queues, and event loop.',
+    'Analyze small JavaScript snippets and step through the call stack, Web APIs, microtask queue, macrotask queue, and event loop.',
+  openGraph: {
+    title: 'EventLoop Lab',
+    description:
+      'Visualize how JavaScript code moves through the call stack, Web APIs, queues, and event loop.',
+    url: 'https://eventloop-lab.vercel.app',
+    siteName: 'EventLoop Lab',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'EventLoop Lab JavaScript Runtime Visualizer',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EventLoop Lab',
+    description: 'Visualize JavaScript runtime behaviour step by step.',
+    images: ['/opengraph-image'],
+  },
 };
 
 export default function RootLayout({
@@ -24,11 +47,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }
