@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { RuntimeBox } from '@/components/RuntimeBox';
+import { StepTimeline } from '@/components/StepTimeline';
 import { sampleCode, steps } from '@/lib/runtimeTrace';
 
 export default function Home() {
@@ -43,6 +44,11 @@ export default function Home() {
   function reset() {
     setIsPlaying(false);
     setCurrentStepIndex(0);
+  }
+
+  function selectStep(stepIndex: number) {
+    setIsPlaying(false);
+    setCurrentStepIndex(stepIndex);
   }
 
   return (
@@ -130,6 +136,12 @@ export default function Home() {
                 Reset
               </button>
             </div>
+
+            <StepTimeline
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              onSelectStep={selectStep}
+            />
 
             <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">
