@@ -207,6 +207,23 @@ export default function Home() {
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 {currentStep.explanation}
               </p>
+
+              {currentStep.events && currentStep.events.length > 0 ? (
+                <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-3">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Runtime events
+                  </h3>
+
+                  <ol className="space-y-1 text-sm text-slate-300">
+                    {currentStep.events.map((event, index) => (
+                      <li key={`${event}-${index}`} className="flex gap-2">
+                        <span className="text-slate-600">{index + 1}.</span>
+                        <span>{event}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">

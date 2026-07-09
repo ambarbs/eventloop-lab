@@ -5,6 +5,7 @@ export type RuntimeStep = {
   phase: RuntimePhase;
   title: string;
   explanation: string;
+  events: string[];
   callStack: string[];
   webApis: string[];
   microtasks: string[];
@@ -44,6 +45,12 @@ console.log("D");`,
         title: 'Run first synchronous line',
         explanation:
           "The global code starts executing. console.log('A') goes directly onto the call stack and runs immediately.",
+        events: [
+          'Enter global execution context',
+          'Push console.log("A") onto the call stack',
+          'Print A to console',
+          'Pop console.log("A") from the call stack',
+        ],
         callStack: ['global()', 'console.log("A")'],
         webApis: [],
         microtasks: [],
@@ -56,6 +63,12 @@ console.log("D");`,
         title: 'Register timer',
         explanation:
           'setTimeout is called. The callback is handed to the browser timer API. The callback body does not run yet.',
+        events: [
+          'Push setTimeout(...) onto the call stack',
+          'Register timer callback with the browser timer API',
+          'Timer callback waits outside the call stack',
+          'Pop setTimeout(...) from the call stack',
+        ],
         callStack: ['global()', 'setTimeout(...)'],
         webApis: ['Timer registered: callback from line 4'],
         microtasks: [],
@@ -68,6 +81,12 @@ console.log("D");`,
         title: 'Schedule promise callback',
         explanation:
           'Promise.resolve().then(...) schedules the callback into the microtask queue. It will run after the current synchronous code finishes.',
+        events: [
+          'Push Promise.then(...) onto the call stack',
+          'Create resolved promise reaction',
+          'Insert promise callback into the microtask queue',
+          'Pop Promise.then(...) from the call stack',
+        ],
         callStack: ['global()', 'Promise.then(...)'],
         webApis: [],
         microtasks: ['Promise callback from line 8'],
@@ -80,6 +99,12 @@ console.log("D");`,
         title: 'Run final synchronous line',
         explanation:
           "console.log('D') runs immediately because it is still part of the synchronous global execution.",
+        events: [
+          'Push console.log("D") onto the call stack',
+          'Print D to console',
+          'Finish synchronous global code',
+          'Call stack becomes empty',
+        ],
         callStack: ['global()', 'console.log("D")'],
         webApis: [],
         microtasks: ['Promise callback from line 8'],
@@ -93,6 +118,13 @@ console.log("D");`,
 
         explanation:
           'The global call stack is now empty, so the event loop gives priority to the microtask queue. The promise callback runs before the timer.',
+        events: [
+          'Event loop checks microtask queue first',
+          'Move promise callback onto the call stack',
+          'Push console.log("C") onto the call stack',
+          'Print C to console',
+          'Microtask queue becomes empty',
+        ],
         callStack: ['Promise callback', 'console.log("C")'],
         webApis: [],
         microtasks: [],
@@ -103,9 +135,15 @@ console.log("D");`,
         line: 4,
         title: 'Run timer callback',
         phase: 'macrotask',
-
         explanation:
           'After microtasks are cleared, the event loop moves the timer callback from the macrotask queue onto the call stack.',
+        events: [
+          'Event loop checks the macrotask queue',
+          'Move timer callback onto the call stack',
+          'Push console.log("B") onto the call stack',
+          'Print B to console',
+          'Timer callback finishes',
+        ],
         callStack: ['Timer callback', 'console.log("B")'],
         webApis: [],
         microtasks: [],
