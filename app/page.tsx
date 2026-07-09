@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RuntimeBox } from '@/components/RuntimeBox';
 import { StepTimeline } from '@/components/StepTimeline';
-import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
 import { PhaseBadge } from '@/components/PhaseBadge';
+import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
+import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
+  const [code, setCode] = useState(defaultSample.code);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -15,9 +17,8 @@ export default function Home() {
     runtimeSamples.find((sample) => sample.id === selectedSampleId) ??
     defaultSample;
 
-  const steps = selectedSample.steps;
-  const code = selectedSample.code;
-  const currentStep = steps[currentStepIndex];
+  const steps = useMemo(() => buildRuntimeTrace(code), [code]);
+  const currentStep = steps[currentStepIndex] ?? steps[0];
 
   const codeLines = useMemo(() => code.split('\n'), [code]);
 
@@ -41,7 +42,7 @@ export default function Home() {
     }, 1200);
 
     return () => window.clearInterval(timer);
-  }, [isPlaying]);
+  }, [isPlaying, steps.length]);
 
   function goPrevious() {
     setIsPlaying(false);
@@ -75,7 +76,11 @@ export default function Home() {
   }
 
   function selectSample(sampleId: string) {
+    const nextSample =
+      runtimeSamples.find((sample) => sample.id === sampleId) ?? defaultSample;
+
     setSelectedSampleId(sampleId);
+    setCode(nextSample.code);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   }
@@ -122,9 +127,21 @@ export default function Home() {
                 </option>
               ))}
             </select>
-            <pre className="min-h-64 w-full overflow-auto rounded-lg border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100">
-              {code}
-            </pre>
+            <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+              Parser v0 only supports simple console.log, setTimeout, and
+              Promise.resolve().then examples. Unsupported code will be ignored
+              for now.
+            </p>
+            <textarea
+              value={code}
+              onChange={(event) => {
+                setCode(event.target.value);
+                setCurrentStepIndex(0);
+                setIsPlaying(false);
+              }}
+              className="min-h-64 w-full rounded-lg border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100 outline-none focus:border-cyan-500"
+              spellCheck={false}
+            />
             <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm">
               {codeLines.map((line, index) => {
                 const lineNumber = index + 1;
