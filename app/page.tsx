@@ -100,9 +100,11 @@ export default function Home() {
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
         <header>
-          <p className="text-sm font-medium text-cyan-400">EventLoop Lab</p>
+          <p className="text-sm font-medium text-cyan-400">
+            JavaScript Runtime Visualizer
+          </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">
-            Step through JavaScript runtime behaviour
+            EventLoop Lab
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-400">
             This first version uses a simulated trace. It does not execute
