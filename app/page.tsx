@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { RuntimeBox } from '@/components/RuntimeBox';
 import { StepTimeline } from '@/components/StepTimeline';
 import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
+import { PhaseBadge } from '@/components/PhaseBadge';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -192,9 +193,14 @@ export default function Home() {
             />
 
             <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Step {currentStepIndex + 1} of {steps.length}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">
+                  Step {currentStepIndex + 1} of {steps.length}
+                </p>
+
+                <PhaseBadge phase={currentStep.phase} />
+              </div>
+
               <h2 className="mt-2 text-xl font-semibold text-slate-100">
                 {currentStep.title}
               </h2>

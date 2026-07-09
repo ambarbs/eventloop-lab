@@ -1,5 +1,8 @@
+export type RuntimePhase = 'sync' | 'web-api' | 'microtask' | 'macrotask';
+
 export type RuntimeStep = {
   line: number;
+  phase: RuntimePhase;
   title: string;
   explanation: string;
   callStack: string[];
@@ -37,6 +40,7 @@ console.log("D");`,
     steps: [
       {
         line: 1,
+        phase: 'sync',
         title: 'Run first synchronous line',
         explanation:
           "The global code starts executing. console.log('A') goes directly onto the call stack and runs immediately.",
@@ -48,6 +52,7 @@ console.log("D");`,
       },
       {
         line: 3,
+        phase: 'web-api',
         title: 'Register timer',
         explanation:
           'setTimeout is called. The callback is handed to the browser timer API. The callback body does not run yet.',
@@ -59,6 +64,7 @@ console.log("D");`,
       },
       {
         line: 7,
+        phase: 'microtask',
         title: 'Schedule promise callback',
         explanation:
           'Promise.resolve().then(...) schedules the callback into the microtask queue. It will run after the current synchronous code finishes.',
@@ -70,6 +76,7 @@ console.log("D");`,
       },
       {
         line: 11,
+        phase: 'sync',
         title: 'Run final synchronous line',
         explanation:
           "console.log('D') runs immediately because it is still part of the synchronous global execution.",
@@ -82,6 +89,8 @@ console.log("D");`,
       {
         line: 8,
         title: 'Run microtask',
+        phase: 'microtask',
+
         explanation:
           'The global call stack is now empty, so the event loop gives priority to the microtask queue. The promise callback runs before the timer.',
         callStack: ['Promise callback', 'console.log("C")'],
@@ -93,6 +102,8 @@ console.log("D");`,
       {
         line: 4,
         title: 'Run timer callback',
+        phase: 'macrotask',
+
         explanation:
           'After microtasks are cleared, the event loop moves the timer callback from the macrotask queue onto the call stack.',
         callStack: ['Timer callback', 'console.log("B")'],

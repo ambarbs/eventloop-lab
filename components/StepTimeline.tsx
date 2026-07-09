@@ -1,4 +1,5 @@
 import type { RuntimeStep } from '@/lib/runtimeTrace';
+import { PhaseBadge } from '@/components/PhaseBadge';
 
 type StepTimelineProps = {
   steps: RuntimeStep[];
@@ -35,9 +36,13 @@ export function StepTimeline({
                 <span className="font-medium">
                   {index + 1}. {step.title}
                 </span>
-                <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
-                  Line {step.line}
-                </span>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <PhaseBadge phase={step.phase} />
+                  <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                    Line {step.line}
+                  </span>
+                </div>
               </div>
             </button>
           );
