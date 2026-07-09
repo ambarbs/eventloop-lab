@@ -26,7 +26,7 @@ export function StepTimeline({
             <button
               key={`${step.line}-${step.title}`}
               onClick={() => onSelectStep(index)}
-              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+              className={`w-full cursor-pointer rounded-lg border px-3 py-2 text-left text-sm transition ${
                 isCurrent
                   ? 'border-cyan-400 bg-cyan-500/15 text-cyan-100'
                   : 'border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-slate-100'

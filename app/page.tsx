@@ -9,18 +9,20 @@ import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
-  const [code, setCode] = useState(defaultSample.code);
+  const [draftCode, setDraftCode] = useState(defaultSample.code);
+  const [analyzedCode, setAnalyzedCode] = useState(defaultSample.code);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasUnanalyzedChanges, setHasUnanalyzedChanges] = useState(false);
 
   const selectedSample =
     runtimeSamples.find((sample) => sample.id === selectedSampleId) ??
     defaultSample;
 
-  const steps = useMemo(() => buildRuntimeTrace(code), [code]);
+  const steps = useMemo(() => buildRuntimeTrace(analyzedCode), [analyzedCode]);
   const currentStep = steps[currentStepIndex] ?? steps[0];
 
-  const codeLines = useMemo(() => code.split('\n'), [code]);
+  const codeLines = useMemo(() => analyzedCode.split('\n'), [analyzedCode]);
 
   const tracedLines = useMemo(
     () => new Set(steps.map((step) => step.line)),
@@ -80,9 +82,18 @@ export default function Home() {
       runtimeSamples.find((sample) => sample.id === sampleId) ?? defaultSample;
 
     setSelectedSampleId(sampleId);
-    setCode(nextSample.code);
+    setDraftCode(nextSample.code);
+    setAnalyzedCode(nextSample.code);
     setCurrentStepIndex(0);
     setIsPlaying(false);
+    setHasUnanalyzedChanges(false);
+  }
+
+  function analyzeCode() {
+    setAnalyzedCode(draftCode);
+    setCurrentStepIndex(0);
+    setIsPlaying(false);
+    setHasUnanalyzedChanges(false);
   }
 
   return (
@@ -133,15 +144,34 @@ export default function Home() {
               for now.
             </p>
             <textarea
-              value={code}
+              value={draftCode}
               onChange={(event) => {
-                setCode(event.target.value);
-                setCurrentStepIndex(0);
+                setDraftCode(event.target.value);
+                setHasUnanalyzedChanges(true);
                 setIsPlaying(false);
               }}
               className="min-h-64 w-full rounded-lg border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100 outline-none focus:border-cyan-500"
               spellCheck={false}
             />
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={analyzeCode}
+                className="rounded-lg cursor-pointer bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400"
+              >
+                Analyze code
+              </button>
+
+              {hasUnanalyzedChanges ? (
+                <span className="text-xs text-amber-300">
+                  You have edits that have not been analyzed yet.
+                </span>
+              ) : (
+                <span className="text-xs text-slate-500">
+                  Trace is up to date.
+                </span>
+              )}
+            </div>
             <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm">
               {codeLines.map((line, index) => {
                 const lineNumber = index + 1;
@@ -176,28 +206,28 @@ export default function Home() {
             <div className="mb-4 flex flex-wrap gap-2">
               <button
                 onClick={goPrevious}
-                className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
               >
                 Previous
               </button>
 
               <button
                 onClick={() => setIsPlaying((value) => !value)}
-                className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400"
+                className="rounded-lg cursor-pointer bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400"
               >
                 {isPlaying ? 'Pause' : 'Play'}
               </button>
 
               <button
                 onClick={goNext}
-                className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
               >
                 Next
               </button>
 
               <button
                 onClick={reset}
-                className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
               >
                 Reset
               </button>
