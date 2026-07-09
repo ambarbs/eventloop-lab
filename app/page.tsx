@@ -14,6 +14,11 @@ export default function Home() {
 
   const codeLines = useMemo(() => code.split('\n'), [code]);
 
+  const tracedLines = useMemo(
+    () => new Set(steps.map((step) => step.line)),
+    [],
+  );
+
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -51,6 +56,17 @@ export default function Home() {
     setCurrentStepIndex(stepIndex);
   }
 
+  function selectLine(lineNumber: number) {
+    const matchingStepIndex = steps.findIndex(
+      (step) => step.line === lineNumber,
+    );
+
+    if (matchingStepIndex === -1) return;
+
+    setIsPlaying(false);
+    setCurrentStepIndex(matchingStepIndex);
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -86,21 +102,27 @@ export default function Home() {
               {codeLines.map((line, index) => {
                 const lineNumber = index + 1;
                 const isCurrentLine = lineNumber === currentStep.line;
+                const canSelectLine = tracedLines.has(lineNumber);
 
                 return (
-                  <div
+                  <button
                     key={`${lineNumber}-${line}`}
-                    className={`grid grid-cols-[2.5rem_1fr] rounded px-2 py-1 ${
+                    type="button"
+                    disabled={!canSelectLine}
+                    onClick={() => selectLine(lineNumber)}
+                    className={`grid w-full grid-cols-[2.5rem_1fr] rounded px-2 py-1 text-left font-mono text-sm ${
                       isCurrentLine
                         ? 'bg-cyan-500/15 text-cyan-100'
-                        : 'text-slate-400'
-                    }`}
+                        : canSelectLine
+                          ? 'text-slate-300 hover:bg-slate-800'
+                          : 'text-slate-500'
+                    } ${canSelectLine ? 'cursor-pointer' : 'cursor-default'}`}
                   >
                     <span className="select-none text-slate-600">
                       {lineNumber}
                     </span>
                     <span>{line || ' '}</span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
