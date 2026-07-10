@@ -10,6 +10,7 @@ import { TraceDiagnostics } from '@/components/trace/TraceDiagnostics';
 import { TraceControls } from '@/components/trace/TraceControls';
 import { StepDetail } from '@/components/trace/StepDetail';
 import { ConsoleOutput } from '@/components/trace/ConsoleOutput';
+import { AnalyzedCodePreview } from '@/components/code/AnalyzedCodePreview';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -183,36 +184,12 @@ export default function Home() {
                 </span>
               )}
             </div>
-            <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm">
-              {codeLines.map((line, index) => {
-                const lineNumber = index + 1;
-                const isCurrentLine = currentStep
-                  ? lineNumber === currentStep.line
-                  : false;
-                const canSelectLine = tracedLines.has(lineNumber);
-
-                return (
-                  <button
-                    key={`${lineNumber}-${line}`}
-                    type="button"
-                    disabled={!canSelectLine}
-                    onClick={() => selectLine(lineNumber)}
-                    className={`grid w-full grid-cols-[2.5rem_1fr] rounded px-2 py-1 text-left font-mono text-sm ${
-                      isCurrentLine
-                        ? 'bg-cyan-500/15 text-cyan-100'
-                        : canSelectLine
-                          ? 'text-slate-300 hover:bg-slate-800'
-                          : 'text-slate-500'
-                    } ${canSelectLine ? 'cursor-pointer' : 'cursor-default'}`}
-                  >
-                    <span className="select-none text-slate-600">
-                      {lineNumber}
-                    </span>
-                    <span>{line || ' '}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <AnalyzedCodePreview
+              codeLines={codeLines}
+              currentLine={currentStep?.line}
+              tracedLines={tracedLines}
+              onSelectLine={selectLine}
+            />
           </section>
 
           <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
