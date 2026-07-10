@@ -9,6 +9,7 @@ import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
 import { AppHeader } from '@/components/AppHeader';
 import { TraceDiagnostics } from '@/components/trace/TraceDiagnostics';
 import { error } from 'console';
+import { TraceControls } from '@/components/trace/TraceControls';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -215,40 +216,14 @@ export default function Home() {
           </section>
 
           <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-            <div className="mb-4 flex flex-wrap gap-2">
-              <button
-                onClick={goPrevious}
-                disabled={!hasTrace || steps.length === 0}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Previous
-              </button>
-
-              <button
-                onClick={() => setIsPlaying((value) => !value)}
-                disabled={!hasTrace || steps.length === 0}
-                className="rounded-lg cursor-pointer bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isPlaying ? 'Pause' : 'Play'}
-              </button>
-
-              <button
-                onClick={goNext}
-                disabled={!hasTrace || steps.length === 0}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-
-              <button
-                onClick={reset}
-                disabled={!hasTrace || steps.length === 0}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Reset
-              </button>
-            </div>
-
+            <TraceControls
+              isPlaying={isPlaying}
+              disabled={!hasTrace}
+              onPrevious={goPrevious}
+              onPlayPause={() => setIsPlaying((value) => !value)}
+              onNext={goNext}
+              onReset={reset}
+            />
             {steps.length > 0 ? (
               <>
                 <StepTimeline
