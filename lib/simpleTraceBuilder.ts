@@ -1,6 +1,18 @@
 import { parse } from '@babel/parser';
 import type { RuntimeStep } from '@/lib/runtimeTrace';
 
+export type RuntimeTraceResult = {
+  steps: RuntimeStep[];
+  error?: {
+    title: string;
+    message: string;
+  };
+  warning?: {
+    title: string;
+    message: string;
+  };
+};
+
 type SourceLocation = {
   start: {
     line: number;
@@ -252,27 +264,6 @@ function findFirstConsoleLogInCallback(callbackNode: AstNode | null): {
     line: callbackLine,
     output: null,
   };
-}
-
-function addUnsupportedStep(message: string): RuntimeStep[] {
-  return [
-    {
-      line: 1,
-      phase: 'sync',
-      title: 'No supported runtime steps found',
-      explanation: message,
-      events: [
-        'Try console.log("A")',
-        'Try setTimeout(() => { console.log("B") }, 0)',
-        'Try Promise.resolve().then(() => { console.log("C") })',
-      ],
-      callStack: [],
-      webApis: [],
-      microtasks: [],
-      macrotasks: [],
-      consoleOutput: [],
-    },
-  ];
 }
 
 function addConsoleLogStep(
@@ -605,7 +596,7 @@ function drainMacrotasks(state: TraceState) {
   }
 }
 
-export function buildRuntimeTrace(code: string): RuntimeStep[] {
+export function buildRuntimeTrace(code: string): RuntimeTraceResult {
   let ast: AstNode;
 
   try {
@@ -617,23 +608,13 @@ export function buildRuntimeTrace(code: string): RuntimeStep[] {
     const message =
       error instanceof Error ? error.message : 'The code could not be parsed.';
 
-    return [
-      {
-        line: 1,
-        phase: 'sync',
+    return {
+      steps: [],
+      error: {
         title: 'Parser error',
-        explanation: message,
-        events: [
-          'Check for missing brackets, commas, or parentheses',
-          'Parser v1 supports only a small JavaScript subset',
-        ],
-        callStack: [],
-        webApis: [],
-        microtasks: [],
-        macrotasks: [],
-        consoleOutput: [],
+        message,
       },
-    ];
+    };
   }
 
   const program = getNode(ast, 'program');
@@ -662,10 +643,17 @@ export function buildRuntimeTrace(code: string): RuntimeStep[] {
   drainMacrotasks(state);
 
   if (state.steps.length === 0) {
-    return addUnsupportedStep(
-      'This parser could read the code, but it did not find any currently supported runtime patterns.',
-    );
+    return {
+      steps: [],
+      warning: {
+        title: 'No supported runtime patterns found',
+        message:
+          'The parser could read the code, but this version only supports console.log, simple function calls, setTimeout, and Promise.resolve().then.',
+      },
+    };
   }
 
-  return state.steps;
+  return {
+    steps: state.steps,
+  };
 }

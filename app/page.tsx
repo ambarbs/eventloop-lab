@@ -19,8 +19,15 @@ export default function Home() {
     runtimeSamples.find((sample) => sample.id === selectedSampleId) ??
     defaultSample;
 
-  const steps = useMemo(() => buildRuntimeTrace(analyzedCode), [analyzedCode]);
+  const traceResult = useMemo(
+    () => buildRuntimeTrace(analyzedCode),
+    [analyzedCode],
+  );
+
+  const steps = traceResult.steps;
   const currentStep = steps[currentStepIndex] ?? steps[0];
+  const hasTrace = steps.length > 0;
+  const hasDiagnostic = Boolean(traceResult.error || traceResult.warning);
 
   const codeLines = useMemo(() => analyzedCode.split('\n'), [analyzedCode]);
 
@@ -126,7 +133,9 @@ export default function Home() {
               </div>
 
               <span className="shrink-0 rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
-                Current line: {currentStep.line}
+                {currentStep
+                  ? `Current line: ${currentStep.line}`
+                  : 'No active line'}
               </span>
             </div>
             <select
@@ -168,6 +177,14 @@ export default function Home() {
                 <span className="text-xs text-amber-300">
                   You have edits that have not been analyzed yet.
                 </span>
+              ) : traceResult.error ? (
+                <span className="text-xs text-red-300">
+                  Analysis failed. Fix the syntax and analyze again.
+                </span>
+              ) : traceResult.warning ? (
+                <span className="text-xs text-amber-300">
+                  Code analyzed, but no supported runtime trace was found.
+                </span>
               ) : (
                 <span className="text-xs text-slate-500">
                   Trace is up to date.
@@ -177,7 +194,9 @@ export default function Home() {
             <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm">
               {codeLines.map((line, index) => {
                 const lineNumber = index + 1;
-                const isCurrentLine = lineNumber === currentStep.line;
+                const isCurrentLine = currentStep
+                  ? lineNumber === currentStep.line
+                  : false;
                 const canSelectLine = tracedLines.has(lineNumber);
 
                 return (
@@ -208,116 +227,172 @@ export default function Home() {
             <div className="mb-4 flex flex-wrap gap-2">
               <button
                 onClick={goPrevious}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                disabled={!hasTrace || steps.length === 0}
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Previous
               </button>
 
               <button
                 onClick={() => setIsPlaying((value) => !value)}
-                className="rounded-lg cursor-pointer bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400"
+                disabled={!hasTrace || steps.length === 0}
+                className="rounded-lg cursor-pointer bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPlaying ? 'Pause' : 'Play'}
               </button>
 
               <button
                 onClick={goNext}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                disabled={!hasTrace || steps.length === 0}
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
               </button>
 
               <button
                 onClick={reset}
-                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
+                disabled={!hasTrace || steps.length === 0}
+                className="rounded-lg cursor-pointer bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Reset
               </button>
             </div>
 
-            <StepTimeline
-              steps={steps}
-              currentStepIndex={currentStepIndex}
-              onSelectStep={selectStep}
-            />
+            {steps.length > 0 ? (
+              <>
+                <StepTimeline
+                  steps={steps}
+                  currentStepIndex={currentStepIndex}
+                  onSelectStep={selectStep}
+                />
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">
-                  Step {currentStepIndex + 1} of {steps.length}
+                {/* existing explanation card, runtime boxes, console output */}
+              </>
+            ) : !hasTrace && !hasDiagnostic ? (
+              <section className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                <h2 className="text-sm font-semibold text-slate-200">
+                  No runtime trace yet
+                </h2>
+                <p className="mt-2 text-sm text-slate-400">
+                  Fix the code or use a supported pattern, then click Analyze
+                  code.
                 </p>
+              </section>
+            ) : null}
 
-                <PhaseBadge phase={currentStep.phase} />
-              </div>
-
-              <h2 className="mt-2 text-xl font-semibold text-slate-100">
-                {currentStep.title}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                {currentStep.explanation}
-              </p>
-
-              {currentStep.events && currentStep.events.length > 0 ? (
-                <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-3">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Runtime events
-                  </h3>
-
-                  <ol className="space-y-1 text-sm text-slate-300">
-                    {currentStep.events.map((event, index) => (
-                      <li key={`${event}-${index}`} className="flex gap-2">
-                        <span className="text-slate-600">{index + 1}.</span>
-                        <span>{event}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <RuntimeBox
-                title="Call stack"
-                items={currentStep.callStack}
-                emptyText="Stack is empty."
-              />
-
-              <RuntimeBox
-                title="Web APIs"
-                items={currentStep.webApis}
-                emptyText="No browser API work."
-              />
-
-              <RuntimeBox
-                title="Microtask queue"
-                items={currentStep.microtasks}
-                emptyText="No microtasks queued."
-              />
-
-              <RuntimeBox
-                title="Macrotask queue"
-                items={currentStep.macrotasks}
-                emptyText="No macrotasks queued."
-              />
-            </div>
-
-            <section className="mt-4 rounded-xl border border-slate-800 bg-black p-4">
-              <h2 className="mb-3 text-sm font-semibold text-slate-200">
-                Console output
-              </h2>
-
-              {currentStep.consoleOutput.length === 0 ? (
-                <p className="font-mono text-sm text-slate-500">
-                  No output yet.
+            {traceResult.error ? (
+              <section className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 p-4">
+                <h2 className="text-sm font-semibold text-red-200">
+                  {traceResult.error.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-red-100">
+                  {traceResult.error.message}
                 </p>
-              ) : (
-                <div className="space-y-1 font-mono text-sm text-green-300">
-                  {currentStep.consoleOutput.map((output, index) => (
-                    <p key={`${output}-${index}`}>&gt; {output}</p>
-                  ))}
+              </section>
+            ) : null}
+
+            {traceResult.warning ? (
+              <section className="mb-4 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
+                <h2 className="text-sm font-semibold text-amber-200">
+                  {traceResult.warning.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-amber-100">
+                  {traceResult.warning.message}
+                </p>
+              </section>
+            ) : null}
+
+            {hasTrace && currentStep ? (
+              <>
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                      Step {currentStepIndex + 1} of {steps.length}
+                    </p>
+
+                    <PhaseBadge phase={currentStep.phase} />
+                  </div>
+
+                  <h2 className="mt-2 text-xl font-semibold text-slate-100">
+                    {currentStep.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    {currentStep.explanation}
+                  </p>
+
+                  {currentStep.events && currentStep.events.length > 0 ? (
+                    <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-3">
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Runtime events
+                      </h3>
+
+                      <ol className="space-y-1 text-sm text-slate-300">
+                        {currentStep.events.map((event, index) => (
+                          <li key={`${event}-${index}`} className="flex gap-2">
+                            <span className="text-slate-600">{index + 1}.</span>
+                            <span>{event}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : null}
                 </div>
-              )}
-            </section>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <RuntimeBox
+                    title="Call stack"
+                    items={currentStep.callStack}
+                    emptyText="Stack is empty."
+                  />
+
+                  <RuntimeBox
+                    title="Web APIs"
+                    items={currentStep.webApis}
+                    emptyText="No browser API work."
+                  />
+
+                  <RuntimeBox
+                    title="Microtask queue"
+                    items={currentStep.microtasks}
+                    emptyText="No microtasks queued."
+                  />
+
+                  <RuntimeBox
+                    title="Macrotask queue"
+                    items={currentStep.macrotasks}
+                    emptyText="No macrotasks queued."
+                  />
+                </div>
+
+                <section className="mt-4 rounded-xl border border-slate-800 bg-black p-4">
+                  <h2 className="mb-3 text-sm font-semibold text-slate-200">
+                    Console output
+                  </h2>
+
+                  {currentStep.consoleOutput.length === 0 ? (
+                    <p className="font-mono text-sm text-slate-500">
+                      No output yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-1 font-mono text-sm text-green-300">
+                      {currentStep.consoleOutput.map((output, index) => (
+                        <p key={`${output}-${index}`}>&gt; {output}</p>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            ) : !hasDiagnostic ? (
+              <section className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                <h2 className="text-sm font-semibold text-slate-200">
+                  No runtime trace available
+                </h2>
+                <p className="mt-2 text-sm text-slate-400">
+                  Fix the code or use a supported JavaScript pattern, then click
+                  Analyze code.
+                </p>
+              </section>
+            ) : null}
           </section>
         </div>
       </div>
