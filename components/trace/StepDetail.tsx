@@ -9,7 +9,7 @@ type StepDetailProps = {
 
 export function StepDetail({ step, stepNumber, totalSteps }: StepDetailProps) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+    <section className="border-t border-slate-800 pt-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs uppercase tracking-wide text-slate-500">
           Step {stepNumber} of {totalSteps}
@@ -27,12 +27,12 @@ export function StepDetail({ step, stepNumber, totalSteps }: StepDetailProps) {
       </p>
 
       {step.events && step.events.length > 0 ? (
-        <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-3">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="mt-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Runtime events
           </h3>
 
-          <ol className="space-y-1 text-sm text-slate-300">
+          <ol className="mt-2 space-y-1 text-sm text-slate-300">
             {step.events.map((event, index) => (
               <li key={`${event}-${index}`} className="flex gap-2">
                 <span className="text-slate-600">{index + 1}.</span>
@@ -42,6 +42,6 @@ export function StepDetail({ step, stepNumber, totalSteps }: StepDetailProps) {
           </ol>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
