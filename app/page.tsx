@@ -7,6 +7,8 @@ import { PhaseBadge } from '@/components/PhaseBadge';
 import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
 import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
 import { AppHeader } from '@/components/AppHeader';
+import { TraceDiagnostics } from '@/components/trace/TraceDiagnostics';
+import { error } from 'console';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -269,27 +271,10 @@ export default function Home() {
               </section>
             ) : null}
 
-            {traceResult.error ? (
-              <section className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 p-4">
-                <h2 className="text-sm font-semibold text-red-200">
-                  {traceResult.error.title}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-red-100">
-                  {traceResult.error.message}
-                </p>
-              </section>
-            ) : null}
-
-            {traceResult.warning ? (
-              <section className="mb-4 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
-                <h2 className="text-sm font-semibold text-amber-200">
-                  {traceResult.warning.title}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-amber-100">
-                  {traceResult.warning.message}
-                </p>
-              </section>
-            ) : null}
+            <TraceDiagnostics
+              error={traceResult.error}
+              warning={traceResult.warning}
+            />
 
             {hasTrace && currentStep ? (
               <>
