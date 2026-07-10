@@ -3,13 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RuntimeBox } from '@/components/RuntimeBox';
 import { StepTimeline } from '@/components/StepTimeline';
-import { PhaseBadge } from '@/components/PhaseBadge';
 import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
 import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
 import { AppHeader } from '@/components/AppHeader';
 import { TraceDiagnostics } from '@/components/trace/TraceDiagnostics';
-import { error } from 'console';
 import { TraceControls } from '@/components/trace/TraceControls';
+import { StepDetail } from '@/components/trace/StepDetail';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -253,39 +252,11 @@ export default function Home() {
 
             {hasTrace && currentStep ? (
               <>
-                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">
-                      Step {currentStepIndex + 1} of {steps.length}
-                    </p>
-
-                    <PhaseBadge phase={currentStep.phase} />
-                  </div>
-
-                  <h2 className="mt-2 text-xl font-semibold text-slate-100">
-                    {currentStep.title}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
-                    {currentStep.explanation}
-                  </p>
-
-                  {currentStep.events && currentStep.events.length > 0 ? (
-                    <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-3">
-                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Runtime events
-                      </h3>
-
-                      <ol className="space-y-1 text-sm text-slate-300">
-                        {currentStep.events.map((event, index) => (
-                          <li key={`${event}-${index}`} className="flex gap-2">
-                            <span className="text-slate-600">{index + 1}.</span>
-                            <span>{event}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  ) : null}
-                </div>
+                <StepDetail
+                  step={currentStep}
+                  stepNumber={currentStepIndex + 1}
+                  totalSteps={steps.length}
+                />
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <RuntimeBox
