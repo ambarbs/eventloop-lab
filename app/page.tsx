@@ -6,6 +6,7 @@ import { StepTimeline } from '@/components/StepTimeline';
 import { PhaseBadge } from '@/components/PhaseBadge';
 import { defaultSample, runtimeSamples } from '@/lib/runtimeTrace';
 import { buildRuntimeTrace } from '@/lib/simpleTraceBuilder';
+import { AppHeader } from '@/components/AppHeader';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -106,19 +107,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header>
-          <p className="text-sm font-medium text-cyan-400">
-            JavaScript Runtime Visualizer
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">
-            EventLoop Lab
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-400">
-            Analyze small JavaScript snippets and step through how supported
-            patterns move through the call stack, Web APIs, microtask queue,
-            macrotask queue, and event loop.
-          </p>
-        </header>
+        <AppHeader />
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
