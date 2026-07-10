@@ -9,6 +9,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { TraceDiagnostics } from '@/components/trace/TraceDiagnostics';
 import { TraceControls } from '@/components/trace/TraceControls';
 import { StepDetail } from '@/components/trace/StepDetail';
+import { ConsoleOutput } from '@/components/trace/ConsoleOutput';
 
 export default function Home() {
   const [selectedSampleId, setSelectedSampleId] = useState(defaultSample.id);
@@ -284,23 +285,7 @@ export default function Home() {
                   />
                 </div>
 
-                <section className="mt-4 rounded-xl border border-slate-800 bg-black p-4">
-                  <h2 className="mb-3 text-sm font-semibold text-slate-200">
-                    Console output
-                  </h2>
-
-                  {currentStep.consoleOutput.length === 0 ? (
-                    <p className="font-mono text-sm text-slate-500">
-                      No output yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-1 font-mono text-sm text-green-300">
-                      {currentStep.consoleOutput.map((output, index) => (
-                        <p key={`${output}-${index}`}>&gt; {output}</p>
-                      ))}
-                    </div>
-                  )}
-                </section>
+                <ConsoleOutput output={currentStep.consoleOutput} />
               </>
             ) : !hasDiagnostic ? (
               <section className="rounded-xl border border-slate-800 bg-slate-950 p-4">
